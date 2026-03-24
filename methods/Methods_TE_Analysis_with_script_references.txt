@@ -1,0 +1,30 @@
+## Transposable Element (TE) Expression Analysis
+
+### TE Quantification and Differential Expression
+
+Transposable element expression was quantified from single-cell RNA-seq data using TEtranscripts v2.2.3 (TE_analysis.R:lines 16-58). Aligned BAM files from STAR were used as input along with the Gencode mouse gene annotation GTF (GRCm38) and RepeatMasker TE annotation GTF (GRCm38_GENCODE_rmsk_TE.gtf). TEtranscripts was run via command line with multi-mapping mode (--mode multi), reverse strand specificity (--stranded reverse), and a minimum read count threshold of 1 (--minread 1) to simultaneously quantify both gene and TE expression. The tool uses an expectation-maximization (EM) algorithm to probabilistically assign multi-mapping reads to TEs.
+
+For pseudobulk differential expression analysis, samples were grouped by treatment condition, with samples labeled by suffix as either .T (antibiotic-treated, n=3) or .C (control, n=3) (TE_analysis.R:lines 31-54). Differential TE expression analysis was performed using DESeq2 v1.48.1 with the design formula ~Type (TE_analysis.R:lines 56-67). TEs were considered significantly differentially expressed at adjusted p-value (Benjamini-Hochberg) < 0.05. Significant TEs (42 total: 36 downregulated, 6 upregulated) were parsed from RepeatMasker format (Name:Family:Class) and categorized into major TE families including ERVK, ERV1, ERVL, ERVB, LINE, SINE, and DNA transposons (TE_analysis.R:lines 98-100).
+
+### Figure 4A: Heatmap of Significant TEs
+
+For visualization of significant TEs (Figure 4A), DESeq2-normalized counts were log2-transformed with a pseudocount of 1, followed by Z-score normalization across samples (regenerate_figure_4A_grouped.R:lines 57-61). TEs were ordered by log2 fold change from most downregulated to most upregulated, and samples were manually grouped by condition (Control | Control | Control | Abx | Abx | Abx) without hierarchical clustering to preserve biological group structure (regenerate_figure_4A_grouped.R:lines 46-51, 74-78). Heatmaps were generated using the pheatmap R package with a diverging red-blue color scale (RdBu palette from RColorBrewer) with values capped at ±2 standard deviations.
+
+### Figure 4H: GREAT Analysis
+
+To investigate potential regulatory functions of differentially expressed TEs, genomic coordinates of significant TEs were submitted to the Genomic Regions Enrichment of Annotations Tool (GREAT) via the web interface. Upregulated and downregulated TEs were analyzed separately. GREAT results for three GO categories (Biological Process, Molecular Function, Cellular Component) were downloaded as CSV files and processed using create_GREAT_barplots.R. The top 10 enriched terms from each category (ranked by adjusted p-value) were visualized as horizontal bar plots showing -log10(adjusted p-value) with category-specific colors (Biological Process: red; Molecular Function: blue; Cellular Component: green) (create_GREAT_barplots.R:lines 66-110).
+
+### Supplemental Figure 4: TE Category and ERV Class Distributions
+
+TE category distributions (Supplemental Figure 4A-B) were generated using regenerate_figure_4B_all_TEs.R. All TEs from the TEtranscripts count table were classified into categories (ERVK, ERV1, ERVL, ERVB, LINE, SINE, DNA transposon, LTR other, Other) based on RepeatMasker family and class annotations (regenerate_figure_4B_all_TEs.R:lines 55-72). Mean normalized expression was calculated per TE in each treatment group, and TEs with mean normalized counts > 10 were considered "detected" (regenerate_figure_4B_all_TEs.R:lines 92-111). The number of detected TEs in each category was counted separately for control and antibiotic-treated samples and visualized as grouped bar charts.
+
+ERV class distributions (Supplemental Figure 4C-D) were generated using regenerate_figure_4C_all_ERVs.R. All LTR retrotransposons were classified into ERV classes based on family: Class I (Gamma-like, ERV1 family), Class II (Beta-like, ERVK family), and Class III (Spuma-like, ERVL and MaLR families) (regenerate_figure_4C_all_ERVs.R:lines 54-86). ERVs with mean normalized counts > 10 in each treatment group were counted by class and visualized as pie charts showing both absolute counts and percentages for overall, control, and antibiotic-treated samples separately (regenerate_figure_4C_all_ERVs.R:lines 186-253).
+
+---
+
+Key Scripts Used:
+- TE_analysis.R - Initial TE quantification and DESeq2 differential expression analysis
+- regenerate_figure_4A_grouped.R - Heatmap of significant TEs (Figure 4A)
+- create_GREAT_barplots.R - GREAT enrichment bar plots (Figure 4H)
+- regenerate_figure_4B_all_TEs.R - TE category distribution (Supplemental Figure 4A-B)
+- regenerate_figure_4C_all_ERVs.R - ERV class distribution pie charts (Supplemental Figure 4C-D)
